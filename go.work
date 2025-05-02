@@ -1,7 +1,8 @@
-go 1.24
+go 1.24.2
 
 use (
 	./agents/approval-agent
-	./agents/security-labeler
 	./agents/reasoning-labeler
+	./agents/security-labeler
+	./shared
 )

@@ -1,44 +1,14 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"gitlab-llm-agent-monorepo-go/shared"
 )
 
-type OllamaRequest struct {
-    Model  string `json:"model"`
-    Prompt string `json:"prompt"`
-    Stream bool   `json:"stream"`
-}
 
-type OllamaResponse struct {
-    Response string `json:"response"`
-}
-
-func queryOllama(prompt string) (string, error) {
-    req := OllamaRequest{
-        Model:  "mistral",
-        Prompt: prompt,
-        Stream: false,
-    }
-    body, _ := json.Marshal(req)
-
-    resp, err := http.Post(os.Getenv("OLLAMA_URL")+"/api/generate", "application/json", bytes.NewReader(body))
-    if err != nil {
-        return "", err
-    }
-    defer resp.Body.Close()
-
-    var result OllamaResponse
-    err = json.NewDecoder(resp.Body).Decode(&result)
-    return result.Response, err
-}
 
 func main() {
     client := shared.InitGitLabClient()
@@ -55,7 +25,7 @@ func main() {
 
     for _, mr := range mrs {
         prompt := fmt.Sprintf("Merge Request Title: %s\nMerge Request Description: %s\nShould we auto-approve? Answer only YES or NO.", mr.Title, mr.Description)
-        response, err := queryOllama(prompt)
+        response, err := shared.QueryOllama(prompt)
         if err != nil {
             log.Printf("LLM query failed for MR !%d: %v", mr.IID, err)
             continue
